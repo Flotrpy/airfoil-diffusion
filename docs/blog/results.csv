@@ -1,0 +1,35 @@
+chart,group,series,hit_rate_pct
+1_iterations,first try,Diffusion alone,10
+1_iterations,first try,Retrieve-refine-verify,57
+1_iterations,first try,+ surrogate gate,65
+1_iterations,first try,+ gate tuned on validation,75
+1_iterations,first try,+ stored-result gate (passed),83
+1_iterations,first try,"Same, diffusion switched off",93
+1_iterations,first try,nearest-neighbour lookup,75
+2_budgets,1 tries,Nearest-neighbour lookup,75
+2_budgets,10 tries,Nearest-neighbour lookup,91
+2_budgets,100 tries,Nearest-neighbour lookup,98
+2_budgets,1 tries,Retrieve-refine-verify,83
+2_budgets,10 tries,Retrieve-refine-verify,97
+2_budgets,100 tries,Retrieve-refine-verify,99
+2_budgets,1 tries,"Same, no diffusion",93
+2_budgets,10 tries,"Same, no diffusion",98
+2_budgets,100 tries,"Same, no diffusion",98
+3_offgrid,1 try,Lookup,1
+3_offgrid,1 try,Diffusion alone (Phase 1),10
+3_offgrid,1 try,"Diffusion alone (Phase 2, physics loss)",18
+3_offgrid,1 try,Retrieve-refine- verify,50
+3_offgrid,1 try,+ interpolated stored results,58
+3_offgrid,within 10 tries,Lookup,16
+3_offgrid,within 10 tries,Diffusion alone (Phase 1),58
+3_offgrid,within 10 tries,"Diffusion alone (Phase 2, physics loss)",70
+3_offgrid,within 10 tries,Retrieve-refine- verify,98
+3_offgrid,within 10 tries,+ interpolated stored results,97
+4_phase2,"On-grid, 1 sample",Phase 1 diffusion,10
+4_phase2,"On-grid, within 10",Phase 1 diffusion,64
+4_phase2,"Off-grid, 1 sample",Phase 1 diffusion,10
+4_phase2,"Off-grid, within 10",Phase 1 diffusion,58
+4_phase2,"On-grid, 1 sample",Phase 2 (PIDM loss + ConFIG),11
+4_phase2,"On-grid, within 10",Phase 2 (PIDM loss + ConFIG),69
+4_phase2,"Off-grid, 1 sample",Phase 2 (PIDM loss + ConFIG),18
+4_phase2,"Off-grid, within 10",Phase 2 (PIDM loss + ConFIG),70
