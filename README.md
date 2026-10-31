@@ -1,5 +1,47 @@
 # airfoil-diffusion
 
+![Python](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)
+![NumPy only](https://img.shields.io/badge/NumPy-only%2C%20no%20PyTorch-013243?logo=numpy&logoColor=white)
+![scikit-learn](https://img.shields.io/badge/scikit--learn-baselines-F7931E?logo=scikitlearn&logoColor=white)
+![Evaluator](https://img.shields.io/badge/evaluator-NeuralFoil-0A7BBB)
+![Runs on CPU](https://img.shields.io/badge/runs%20on-laptop%20CPU-2ea44f)
+![Cost](https://img.shields.io/badge/cost-%240-brightgreen)
+![Phase 1 gate](https://img.shields.io/badge/Phase%201%20gate-passed-success)
+![Status](https://img.shields.io/badge/status-research%20prototype-orange)
+
+## The problem (as originally stated)
+> **The Problem:** Designing aerodynamic profiles for electric vehicles (EVs) or delivery
+> drones requires intensive Computational Fluid Dynamics (CFD) simulations that take
+> supercomputers days or weeks to run for a single shape modification.
+>
+> **The Solution:** Train a diffusion model constrained by the Navier-Stokes fluid equations
+> to instantly generate and optimize surface geometries in real-time based on live
+> wind-tunnel or flight telemetry.
+
+The brief also asked for a game plan built only from 18 uploaded research papers, and for
+a solution that costs nothing and can be built right away.
+
+## How the solution changed with each iteration
+| # | What we tried | What happened | What changed next |
+|---|---|---|---|
+| 0 | **Game plan from the papers.** Full Navier-Stokes CFD is out of reach at zero cost, so: 2-D drone-wing airfoils (11-parameter CST shapes, Airbus), NeuralFoil as the stand-in solver (Graves), a DDPM conditioned on (Re, angle, CL, CD), a physics loss later (PIDM), and warm starts for live updates (Diniz). | Plan written; delivery-drone regime, NeuralFoil, and a 30 s update period chosen. | Build Phase 0 (data + baselines), Phase 1 (diffusion), Phase 3 (warm start) first. |
+| 1 | **Diffusion vs. simple baselines** at 1k, 6k, then 12k airfoils. | Diffusion lost to a nearest-neighbour lookup on one try: 2% vs 30%, 7% vs 56%, 10% vs 75%. **Phase 1 gate failed.** Warm-start updates took ~0.03 s, far inside 30 s. | Keep the problem, change the method: use diffusion to *refine* retrieved shapes instead of generating from scratch. |
+| 2 | **Retrieve → refine → verify:** start from the nearest airfoils, diffusion warm start, then polish with gradients of a small surrogate. | Won at 10 and 100 tries (96%, 99%) but lost at one try (57% vs 75%): it was "fixing" airfoils that were already right. | Add a gate that leaves good airfoils alone. |
+| 3 | **Surrogate gate**, then a gate threshold tuned on validation data. | 65%, then only a tie (75%). The surrogate's error is about as big as the 1% lift tolerance, so it can't tell hits from misses. | Make the stand-in solver more accurate. |
+| 4 | **Stored-result gate:** read each retrieved airfoil's already-computed NeuralFoil result (exact on the training grid), use it for a free bias correction, fine-tune the surrogate locally. | **Phase 1 gate passed:** 83% / 97% / 99% vs lookup 75% / 91% / 98%. Surprise: with diffusion switched off it scored 93% on one try. | Measure how much diffusion actually helps, and test realistic off-grid conditions. |
+| 5 | **Diffusion strength sweep** and **off-grid targets** (flight conditions between grid points, like real telemetry). | No diffusion was best (90% vs 84% on test). Off-grid, the lookup collapsed to 1%; the pipeline still reached 47% on one try and 100% within ten. | Try to make diffusion pull its weight with the physics loss from the plan. |
+| 6 | **Phase 2: physics-informed diffusion** (PIDM-style loss through the surrogate, balanced with ConFIG). | Physics error of generated shapes fell ~30%; diffusion alone improved modestly (off-grid one-sample hits 10% → 18%), but still trails direct polishing. | Improve the off-grid first try instead. |
+| 7 | **Interpolated stored results** for off-grid targets (from the 4 surrounding grid points). | ~3.5× more accurate than the surrogate; off-grid first-try hits 50% → **58%** (97% within ten). | Current state. |
+
+**Where it ended up vs. the original idea:** the working system is a fast
+retrieve-refine-verify loop over a learned airfoil space, with diffusion as an optional,
+physics-informed generator rather than the core engine. Updates take seconds on a laptop
+instead of days of CFD. The "Navier-Stokes" constraint is currently NeuralFoil (a learned
+XFOIL stand-in) through a surrogate, not the flow equations themselves, and the shapes are
+2-D sections, not full EV or drone bodies. Those are the next gaps to close (see *Limits*).
+
+## What this repo is
+
 Conditional diffusion model and a retrieve-refine-verify pipeline that propose airfoil
 shapes for a small delivery-drone wing from requested flight conditions and lift/drag
 targets (the inverse-design core of the "aerodynamic shapes from live telemetry" plan).
