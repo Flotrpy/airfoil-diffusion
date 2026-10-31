@@ -8,6 +8,7 @@
 ![Cost](https://img.shields.io/badge/cost-%240-brightgreen)
 ![Phase 1 gate](https://img.shields.io/badge/Phase%201%20gate-passed-success)
 ![Status](https://img.shields.io/badge/status-research%20prototype-orange)
+![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)
 
 ## The problem (as originally stated)
 > **The Problem:** Designing aerodynamic profiles for electric vehicles (EVs) or delivery
@@ -139,3 +140,6 @@ pipeline. Raw numbers: `results/*.json`.
 - Cosine learning-rate schedule; 50 DDIM steps; x0 clipping in `_denoise` (Airbus's schedule
   makes alpha-bar ~1e-44 at t = T, and unclipped DDIM diverged).
 - Surrogate (13→2 MLP), gate, bias correction, local surrogate fine-tune, interpolated gate.
+
+## License
+MIT, see [LICENSE](LICENSE).
