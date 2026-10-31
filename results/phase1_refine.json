@@ -1,0 +1,7 @@
+{
+  "note": "sandbox run airfoil-refine4, 12,000 airfoils, 4x128 network, 200k steps, NeuralFoil-scored, 100 held-out targets; share of targets hit within the budget",
+  "lookup": {"1": 0.75, "10": 0.91, "100": 0.98},
+  "retrieve-refine-verify": {"1": 0.83, "10": 0.97, "100": 0.99},
+  "ablation: no diffusion": {"1": 0.93, "10": 0.98, "100": 0.98},
+  "gate_passed": true
+}

@@ -1,5 +1,5 @@
 __pycache__/
-*.npz
-results/*.json
-results/run.log
+*.pyc
 .venv/
+data/
+models/

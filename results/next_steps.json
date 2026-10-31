@@ -1,0 +1,10 @@
+{
+  "note": "sandbox run airfoil-phase2, NeuralFoil-scored, 100 targets per set; rrv/lookup = [budget 1, budget 10]; diffusion alone = [1 sample, mean per sample, within 10 samples]",
+  "A1_val": {"lookup": [0.84, 0.93], "t=0": [0.96, 0.99], "t=10": [0.89, 0.97], "t=25": [0.9, 0.98], "t=50": [0.9, 0.97]},
+  "A1_choice": {"best_t": 0, "best_t_with_diffusion": 25},
+  "A1_test": {"lookup": [0.75, 0.91], "t=0": [0.9, 0.97], "t=25": [0.84, 0.94]},
+  "A2_offgrid": {"lookup": [0.01, 0.16], "rrv t=0": [0.47, 1.0], "diffusion alone, Phase 1 model": [0.1, 0.1, 0.58]},
+  "B_train": {"physics_loss_start_6k": 43.27, "physics_loss_end": 30.65, "diffusion_loss_end": 0.206, "seconds": 248},
+  "B_test": {"diffusion alone, Phase 1 model": [0.1, 0.12, 0.64], "diffusion alone, Phase 2 PIDM model": [0.11, 0.134, 0.69], "rrv t=25, Phase 2 model": [0.84, 0.97]},
+  "B_offgrid": {"diffusion alone, Phase 1 model": [0.1, 0.1, 0.58], "diffusion alone, Phase 2 PIDM model": [0.18, 0.136, 0.7]}
+}
