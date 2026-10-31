@@ -83,6 +83,7 @@ python scripts/00_check_env.py       # confirms NeuralFoil works
 | Phase 1 re-test | `07_refine_eval.py` | Retrieve-refine-verify vs the lookup at budgets 1/10/100. |
 | Next steps | `08_next.py` | Diffusion-strength sweep, off-grid targets, Phase 2 PIDM + ConFIG fine-tuning. |
 | Off-grid | `09_offgrid.py` | Interpolated stored-result stand-in for targets between grid points. |
+| Validation | `10_validate.py` | XFOIL re-check, UIUC wind-tunnel targets, 3-D wing with a spar constraint (needs `xfoil`, `aerosandbox`, and a display or `Xvfb :99`). |
 
 Retrieve-refine-verify (`src/afd/refine.py`): retrieve the nearest training airfoils;
 check their stored NeuralFoil result at the target condition and submit unchanged if it
@@ -127,10 +128,52 @@ fine-tuning; diffusion-alone hit rates rose slightly (test: 10%→11% at 1 sampl
 64%→69% within 10). Diffusion still does not beat direct surrogate polishing inside the
 pipeline. Raw numbers: `results/*.json`.
 
+## Independent checks (XFOIL, wind-tunnel data, 3-D wing) — `scripts/10_validate.py`
+All with the final pipeline (no diffusion, interpolated stored results, 10 NeuralFoil checks per target).
+
+**1. XFOIL re-check.** XFOIL 6.99 played no part in training or selection.
+NeuralFoil and XFOIL disagree on the final designs by a median of 0.014 in CL (about 2–3%)
+and 2–3% in CD, which is *larger than the 1% CL tolerance*, so the headline hit rates do not
+survive an independent solver at that tolerance:
+
+| Targets | Method | NeuralFoil, 1% / 5% | XFOIL, 1% / 5% | XFOIL, 5% / 10% |
+|---|---|---|---|---|
+| On-grid | Lookup, 1st try | 75% | 15% | 62% |
+| On-grid | Pipeline, best of 10 | 96% | 13% | 65% |
+| Off-grid | Lookup, 1st try | 1% | 2% | 25% |
+| Off-grid | Pipeline, 1st try | 59% | 17% | 72% |
+| Off-grid | Pipeline, best of 10 | 97% | 22% | 73% |
+
+On-grid, the pipeline's edge over the lookup disappears under XFOIL. Off-grid (the realistic
+case) it holds: roughly 3× the lookup's hit rate at the looser tolerance.
+
+**2. Real wind-tunnel targets.** 100 measured (Re, angle, CL, CD) points from the UIUC
+Low-Speed Airfoil Tests (85 airfoils, Re 1.8–3.6×10⁵), scored with XFOIL:
+
+| | CL 1% / CD 5% | CL 5% / CD 10% | median CL error | median CD error |
+|---|---|---|---|---|
+| The actual tested airfoil, XFOIL | 1% | 5% | 0.076 | 11% |
+| Lookup, 1st try | 12% | 55% | 0.031 | 4.2% |
+| Pipeline, 1st try | 23% | 83% | 0.017 | 2.8% |
+| Pipeline, best of 10 | 29% | 75% | 0.013 | 2.2% |
+
+XFOIL itself misses the measurements of the real airfoils by ~0.08 in CL (low-Re
+laminar-bubble effects and tunnel uncertainty), so 1% agreement with a wind tunnel is not a
+meaningful target at this Reynolds number. The pipeline produces shapes whose XFOIL
+performance is much closer to the requested measured values than the lookup's.
+
+**3. 3-D wing.** Tapered semi-wing (0.6 m, chords 0.25/0.20/0.15 m, 20 m/s, Re 2–3.4×10⁵),
+three sections designed for CL 0.6 at 4° with a spar constraint (≥ 10% thick at quarter
+chord), compared with the best stored "lookup" sections under the same constraint. Section
+drag fell 6–10% (XFOIL confirms 9–10% at root and tip, with CL 2–6% low); no improvement was
+found mid-span. AeroSandbox AeroBuildup: max L/D **20.0 vs 19.5** (+2.5%), L/D at CL 0.5
+19.6 vs 19.2. AeroBuildup uses NeuralFoil for section data, so this is not independent.
+
 ## Limits
-- NeuralFoil is both the training labeller and the judge; results should be re-checked with
-  XFOIL or a RANS/Navier-Stokes solver before trusting them for a real wing.
-- 2-D airfoil sections only; no 3-D wing, no structural or manufacturing constraints.
+- NeuralFoil labels the data and selects the designs. Against XFOIL the 1% CL tolerance is not
+  met (see *Independent checks*); a RANS/Navier-Stokes check is still missing.
+- Mostly 2-D sections; the 3-D wing test uses a simple build-up model and a single spar-depth
+  constraint, not structural analysis.
 - 100 targets per set: differences of a few points are within noise.
 
 ## Choices that are mine, not the papers'
