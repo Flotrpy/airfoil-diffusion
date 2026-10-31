@@ -71,8 +71,13 @@ at 1 / 10 tries; best diffusion setting (t = 25) 84% / 94%.
 |---|---|---|
 | Lookup | 1% | 16% |
 | Diffusion alone, Phase 1 / Phase 2 model | 10% / 18% | 58% / 70% |
-| Retrieve-refine-verify, no stored-result gate | 47% | 100% |
-| Retrieve-refine-verify, interpolated gate | OFFGRID_1 | OFFGRID_10 |
+| Retrieve-refine-verify, no stored results (`08`/`09` runs) | 47–50% | 98–100% |
+| Retrieve-refine-verify, interpolated stored results (`09`) | **58%** | 97% |
+
+Interpolating a retrieved airfoil's stored NeuralFoil results between the 4 surrounding
+grid points is ~3.5x more accurate than the surrogate (median CL error 0.0013 vs 0.0044).
+Its gain comes from the bias correction; the keep-unchanged gate made no difference on
+validation, so it was left off (threshold chosen on validation, 53%→63% there).
 
 **Phase 2 (PIDM + ConFIG):** surrogate lift/drag error of denoised shapes fell ~30% during
 fine-tuning; diffusion-alone hit rates rose slightly (test: 10%→11% at 1 sample,

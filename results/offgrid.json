@@ -1,0 +1,5 @@
+{"note": "sandbox run airfoil-offgrid, NeuralFoil-scored, 100 off-grid targets per set; [budget 1, budget 10]",
+ "interp_error_val": {"median_abs_CL": 0.00127, "median_rel_CD": 0.0052, "coverage": 0.9},
+ "val": {"lookup": [0.01, 0.13], "no interpolation (08 method)": [0.53, 0.97], "interp, gate 0": [0.63, 0.99], "interp, gate 0.5": [0.63, 0.99], "interp, gate 0.8": [0.62, 0.99], "interp, gate 1.0": [0.62, 0.99]},
+ "chosen_gate": 0,
+ "test": {"lookup": [0.01, 0.16], "no interpolation (08 method)": [0.5, 0.98], "interp, gate 0": [0.58, 0.97]}}
