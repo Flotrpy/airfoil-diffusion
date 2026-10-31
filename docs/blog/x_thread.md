@@ -28,7 +28,7 @@ So I stopped generating from scratch: retrieve → refine → verify.
 
 Take the nearest airfoils, polish them with gradients of a small surrogate, and check every candidate with the solver.
 
-It won at 10 and 100 tries but lost on the 1st: it kept "fixing" shapes that were already right. [1_iterations.png]
+Won at 10 and 100 tries, lost on the 1st: it kept "fixing" shapes that were already right. [1_iterations.png]
 
 **5/9**
 The fix: the solver had already scored every training airfoil at those exact conditions.
