@@ -1,5 +1,8 @@
+> 📄 **Paper (preprint):** [Retrieve, Refine, Verify: Inverse Airfoil Design for Small Drones Without CFD](https://zenodo.org/records/23851806) on Zenodo
+
 # airfoil-diffusion
 
+[![Zenodo](https://img.shields.io/badge/Zenodo-23851806-1682D4)](https://zenodo.org/records/23851806)
 ![Python](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)
 ![NumPy only](https://img.shields.io/badge/NumPy-only%2C%20no%20PyTorch-013243?logo=numpy&logoColor=white)
 ![scikit-learn](https://img.shields.io/badge/scikit--learn-baselines-F7931E?logo=scikitlearn&logoColor=white)
