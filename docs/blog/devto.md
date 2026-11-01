@@ -6,6 +6,8 @@ tags: machinelearning, python, ai, engineering
 cover_image: https://raw.githubusercontent.com/Flotrpy/airfoil-diffusion/main/docs/blog/1_iterations.png
 ---
 
+> **Update (Nov 1):** I re-checked everything with an independent solver (XFOIL) and real wind-tunnel data. The headline numbers below were judged by NeuralFoil and don't fully hold up. Between grid points, the method still clearly beats the lookup. See "Update: independent checks" near the end. Paper: https://zenodo.org/records/23851806
+
 ## The idea
 
 Designing aerodynamic shapes for EVs or delivery drones means running CFD (computational fluid dynamics) for every shape change, and serious runs can take days. My pitch was:
@@ -82,6 +84,27 @@ Back to the original idea: a *constrained* diffusion model. I fine-tuned it with
 
 The physics error of generated shapes fell ~30%. Diffusion alone improved modestly, most clearly off-grid (10% → 18% on one sample, 58% → 70% within 10). It still trails direct surrogate polishing.
 
+## Update: independent checks
+
+A commenter ([Dean Lee](https://dev.to/deanlee)) pointed out that a surrogate whose error matches the tolerance turns optimization into noise. The same problem turned out to apply one level up, to the solver itself.
+
+**XFOIL re-check.** XFOIL played no part in training or selection. On the final designs, NeuralFoil and XFOIL disagree by a median of 0.014 in CL (about 2–3%), which is more than my 1% tolerance.
+
+| Targets | Method | NeuralFoil, 1%/5% | XFOIL, 1%/5% | XFOIL, 5%/10% |
+|---|---|---|---|---|
+| On-grid | Lookup, 1st try | 75% | 15% | 62% |
+| On-grid | Pipeline, best of 10 | 96% | 13% | 65% |
+| Off-grid | Lookup, 1st try | 1% | 2% | 25% |
+| Off-grid | Pipeline, best of 10 | 97% | 22% | 73% |
+
+On the grid, the pipeline's edge disappears under XFOIL. Between grid points, the realistic case for telemetry, it holds at about 3× the lookup.
+
+**Real wind-tunnel data.** I used 100 measured points from the UIUC Low-Speed Airfoil Tests (85 airfoils, Re 1.8–3.6×10⁵). XFOIL on the *actual tested airfoils* misses the measurements by a median of 0.076 in CL and 11% in CD, so 1% agreement with a tunnel isn't realistic at this Reynolds number. Scored by XFOIL, the pipeline's designs come much closer to the measured targets than the lookup's (83% vs 55% within 5%/10% on the first try).
+
+**3-D wing.** I built a tapered drone wing from 3 sections, each at least 10% thick for a spar. Section drag fell 6–10%, and XFOIL confirms about 10% at the root and tip. Whole-wing best L/D went from 19.5 to 20.0 in AeroSandbox, but AeroSandbox uses NeuralFoil inside, so that number isn't independent.
+
+**Lesson:** a model trained and judged by the same fast solver can look far more accurate than it is. Always check with a second judge.
+
 ## What I'd tell myself at the start
 
 1. **Beat the baseline before celebrating the model.** The lookup table was the most important experiment in the project.
@@ -92,9 +115,9 @@ The physics error of generated shapes fell ~30%. Diffusion alone improved modest
 
 ## Honest limits
 
-- NeuralFoil both labels the data and judges the answers. Results need re-checking with XFOIL or a RANS/Navier-Stokes solver before any real wing.
-- 2-D sections only: no 3-D wing, no structure, no manufacturing constraints.
-- 100 targets per test set, so differences of a few points are noise.
+- NeuralFoil labels the data and picks the designs. Against XFOIL the 1% CL tolerance isn't met (see the update above); a RANS/Navier-Stokes check is still missing.
+- Mostly 2-D sections. The 3-D wing test uses a simple model and only one structural rule (spar depth).
+- 100 targets per test set and one run each, so there are no error bars. Differences of a few points are noise.
 
 ## Try it
 
@@ -105,6 +128,7 @@ pip install -r requirements.txt
 python scripts/01_make_dataset.py --n-airfoils 12000
 python scripts/03_train_diffusion.py --steps 200000 --width 128
 python scripts/07_refine_eval.py
+python scripts/10_validate.py   # XFOIL, wind-tunnel and 3-D checks (needs xfoil + Xvfb)
 ```
 
 All the numbers in this post are in [`docs/blog/results.csv`](https://github.com/Flotrpy/airfoil-diffusion/blob/main/docs/blog/results.csv) and `results/*.json`. Feedback is very welcome, especially from anyone with access to a real CFD solver.
